@@ -1,5 +1,8 @@
 # quick-coding
 
+## status
+    developing
+
 ## Installation
 
     $ npm install quick-coding -g
