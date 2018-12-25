@@ -1,14 +1,17 @@
 {
   "name": "quick-coding",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "quick coding for js",
   "main": "index.js",
+  "bin": {
+    "quick-coding": "index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xinggangling"
+    "url": "https://github.com/xinggangling/quick-coding"
   },
   "keywords": [
     "node",
@@ -17,7 +20,8 @@
   "author": "0xg",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^2.4.1"
+    "chalk": "^2.4.1",
+    "commander": "^2.19.0"
   },
   "devDependencies": {
     "chai": "^4.2.0"
