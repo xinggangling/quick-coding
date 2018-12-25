@@ -2,8 +2,6 @@
 
 var program = require('commander');
 
-// var program = require('../');
-
 program
   // .version('0.0.1')
   .version('0.0.1', '-v, --version')
