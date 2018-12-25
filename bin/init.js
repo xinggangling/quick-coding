@@ -26,10 +26,10 @@ if(program.init) {
   // 根据将要构建的项目名称创建文件夹
   fs.ensureDirSync(projectName);
  
-  // 获取本地模块下的demo1目录
+  // 获取本地模块下的template_test目录
   var cwd = path.join(__dirname, '../templates/template_test');
   
-  // 从demo1目录中读取除node_modules目录下的所有文件并筛选处理
+  // 从template_test目录中读取除node_modules目录下的所有文件并筛选处理
   vfs.src(['**/*', '!node_modules/**/*'], {cwd: cwd, dot: true})
   .pipe(through.obj(function(file, enc, callback){
     if(!file.stat.isFile()) {
@@ -39,7 +39,7 @@ if(program.init) {
   this.push(file);
     return callback();
   }))
-   // 将从demo1目录下读取的文件流写入到之前创建的文件夹中
+   // 将从template_test目录下读取的文件流写入到之前创建的文件夹中
   .pipe(vfs.dest(projectPath))
   .on('end', function() {
     console.log('Installing packages...')
