@@ -4,7 +4,7 @@
   "description": "quick coding for js",
   "main": "index.js",
   "bin": {
-    "quick-coding": "index.js"
+    "quick-coding": "./bin/quick-coding.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

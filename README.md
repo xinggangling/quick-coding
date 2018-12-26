@@ -1,13 +1,5 @@
-# quick-coding
+# test template
 
-## status
-    developing
+##  use
 
-## Installation
-
-    $ npm install quick-coding -g
-
-## Connect Me
-
-    email: 1678036950@qq.com
-    name: 0xg
+  will be a template of React, Can be download for quick-coding

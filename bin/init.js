@@ -17,12 +17,11 @@ var logger = require('./cli/logger');
 
 module.exports = function init(template, rawName, program) {
   function gen(templatePath) {
-    console.log(name, templatePath, to)
-    // generate(name, templatePath, to, function (err) {
-    //   if (err) logger.fatal(err);
-    //   console.log();
-    //   logger.success('Generated "%s".', name);
-    // });
+    generate(name, templatePath, to, function (err) {
+      if (err) logger.fatal(err);
+      console.log();
+      logger.success('Generated "%s".', name);
+    });
   }
 
   function run() {

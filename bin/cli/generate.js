@@ -1,15 +1,16 @@
-const chalk = require('chalk');
-const Metalsmith = require('metalsmith');
-const Handlebars = require('handlebars');
-const async = require('async');
-const ncp = require('ncp');
-const handlebars = require('consolidate').handlebars;
-const path = require('path');
-const multimatch = require('multimatch');
-const getOptions = require('./options');
-const ask = require('./ask');
-const filter = require('./filter');
-const logger = require('./logger');
+var chalk = require('chalk');
+var Metalsmith = require('metalsmith');
+var Handlebars = require('handlebars');
+var async = require('async');
+var ncp = require('ncp');
+var handlebars = require('consolidate').handlebars;
+var fs = require('fs');
+var path = require('path');
+var multimatch = require('multimatch');
+var getOptions = require('./options');
+var ask = require('./ask');
+var filter = require('./filter');
+var logger = require('./logger');
 
 // register handlebars helper
 Handlebars.registerHelper('if_eq', function (a, b, opts) {
@@ -34,7 +35,8 @@ Handlebars.registerHelper('unless_eq', function (a, b, opts) {
  */
 
 exports = module.exports = function generate(name, src, dest, done) {
-  const opts = getOptions(name, src);
+
+  var opts = getOptions(name, src);
 
   // This is a github project, and there is no meta.json or meta.js
   if (opts.status === false) {
@@ -44,8 +46,11 @@ exports = module.exports = function generate(name, src, dest, done) {
     });
     return {};
   }
-  const metalsmith = Metalsmith(path.join(src, 'template'));
-  const data = Object.assign(metalsmith.metadata(), {
+
+  var dirList = fs.readdirSync(path.resolve(src))
+  var metalsmith = Metalsmith(path.join(src, dirList[0]));
+
+  var data = Object.assign(metalsmith.metadata(), {
     destDirName: name,
     inPlace: dest === process.cwd(),
     noEscape: true
@@ -54,13 +59,13 @@ exports = module.exports = function generate(name, src, dest, done) {
     Handlebars.registerHelper(key, opts.helpers[key]);
   });
 
-  const helpers = { chalk, logger };
+  var helpers = { chalk, logger };
 
   if (opts.metalsmith && typeof opts.metalsmith.before === 'function') {
     opts.metalsmith.before(metalsmith, opts, helpers);
   }
 
-  console.log(opts.prompts)
+  console.log(opts.filters)
 
   metalsmith.use(askQuestions(opts.prompts))
     .use(filterFiles(opts.filters))
@@ -78,7 +83,7 @@ exports = module.exports = function generate(name, src, dest, done) {
     .build((err, files) => {
       done(err);
       if (typeof opts.complete === 'function') {
-        const helpers = { chalk, logger, files };
+        var helpers = { chalk, logger, files };
         opts.complete(data, helpers);
       } else {
         logMessage(opts.completeMessage, data);
@@ -127,14 +132,14 @@ function renderTemplateFiles(skipInterpolation) {
     ? [skipInterpolation]
     : skipInterpolation;
   return (files, metalsmith, done) => {
-    const keys = Object.keys(files);
-    const metalsmithMetadata = metalsmith.metadata();
+    var keys = Object.keys(files);
+    var metalsmithMetadata = metalsmith.metadata();
     async.each(keys, (file, next) => {
       // skipping files with skipInterpolation option
       if (skipInterpolation && multimatch([file], skipInterpolation, { dot: true }).length) {
         return next();
       }
-      const str = files[file].contents.toString();
+      var str = files[file].contents.toString();
       // do not attempt to render files that do not have mustaches
       if (!/{{([^{}]+)}}/g.test(str)) {
         return next();

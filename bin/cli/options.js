@@ -1,8 +1,8 @@
-const path = require('path');
-const metadata = require('read-metadata');
-const fs = require('fs');
-const getGitUser = require('./git-user');
-const validateName = require('validate-npm-package-name');
+var path = require('path');
+var metadata = require('read-metadata');
+var fs = require('fs');
+var getGitUser = require('./git-user');
+var validateName = require('validate-npm-package-name');
 
 /**
  * Read prompts metadata.
@@ -12,12 +12,12 @@ const validateName = require('validate-npm-package-name');
  */
 
 exports = module.exports = function options(name, dir) {
-  const opts = getMetadata(dir)
+  var opts = getMetadata(dir)
 
   setDefault(opts, 'name', name)
   setValidateName(opts)
 
-  const author = getGitUser()
+  var author = getGitUser()
   if (author) {
     setDefault(opts, 'author', author)
   }
@@ -33,17 +33,19 @@ exports = module.exports = function options(name, dir) {
  */
 
 function getMetadata(dir) {
-  const json = path.join(dir, 'meta.json');
-  const js = path.join(dir, 'meta.js');
 
-  console.log(dir)
+  var dirList = fs.readdirSync(path.resolve(dir))
+
+  var json = path.join(dir, dirList[0], 'meta.json');
+  var js = path.join(dir, dirList[0], 'meta.js');
+
   let opts = {};
   opts.status = true;
 
   if (fs.existsSync(json)) {
     opts = metadata.sync(json);
   } else if (fs.existsSync(js)) {
-    const req = require(path.resolve(js));
+    var req = require(path.resolve(js));
     if (req !== Object(req)) {
       throw new Error('meta.js needs to expose an object');
     }
@@ -68,7 +70,7 @@ function setDefault(opts, key, val) {
     opts.prompts = opts.schema
     delete opts.schema
   }
-  const prompts = opts.prompts || (opts.prompts = {})
+  var prompts = opts.prompts || (opts.prompts = {})
   if (!prompts[key] || typeof prompts[key] !== 'object') {
     prompts[key] = {
       'type': 'string',
@@ -80,12 +82,12 @@ function setDefault(opts, key, val) {
 }
 
 function setValidateName(opts) {
-  const name = opts.prompts.name
-  const customValidate = name.validate
+  var name = opts.prompts.name
+  var customValidate = name.validate
   name.validate = name => {
-    const its = validateName(name)
+    var its = validateName(name)
     if (!its.validForNewPackages) {
-      const errors = (its.errors || []).concat(its.warnings || [])
+      var errors = (its.errors || []).concat(its.warnings || [])
       return 'Sorry, ' + errors.join(' and ') + '.'
     }
     if (typeof customValidate === 'function') return customValidate(name)

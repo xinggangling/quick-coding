@@ -9,7 +9,6 @@ exports = module.exports = function checkVersion(done) {
   /**
    * 检测当前node版本是否符合要求
    */
-  console.log('come here')
   if (!semver.satisfies(process.version, pkgConfig.engines.node)) {
     return console.log(chalk.red(
       '  You must upgrade node to >=' + pkgConfig.engines.node + '.x to use quick-coding'
