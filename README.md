@@ -1,5 +1,13 @@
-# test template
+# quick-coding
 
-##  use
+## status
+    developing
 
-  will be a template of React, Can be download for quick-coding
+## Installation
+
+    $ npm install quick-coding -g
+
+## Connect Me
+
+    email: 1678036950@qq.com
+    name: 0xg
