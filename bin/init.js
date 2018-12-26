@@ -1,54 +1,109 @@
 #!/usr/bin/env node
 
 // 引入依赖
-var program = require('commander');
-var vfs = require('vinyl-fs');
-var through = require('through2');
-const chalk = require('chalk');
-const fs = require('fs-extra');
-const path = require('path');
- 
-// 定义版本号以及命令选项
-program
-  .version('1.0.0')
-  .option('-i --init [name]', 'init a project', 'myFirstProject')
-    
-program.parse(process.argv);
- 
-if(program.init) {
-  // 获取将要构建的项目根目录
-  var projectPath = path.resolve(program.init);
-  // 获取将要构建的的项目名称
-  var projectName = path.basename(projectPath);
-    
-  console.log(`Start to init a project in ${chalk.green(projectPath)}`);
- 
-  // 根据将要构建的项目名称创建文件夹
-  fs.ensureDirSync(projectName);
- 
-  // 获取本地模块下的template_test目录
-  var cwd = path.join(__dirname, '../templates/template_test');
-  
-  // 从template_test目录中读取除node_modules目录下的所有文件并筛选处理
-  vfs.src(['**/*', '!node_modules/**/*'], {cwd: cwd, dot: true})
-  .pipe(through.obj(function(file, enc, callback){
-    if(!file.stat.isFile()) {
-      return callback();
+var fs = require('fs');
+var path = require('path');
+var ora = require('ora');
+var chalk = require('chalk');
+var tildify = require('tildify');
+var inquirer = require('inquirer');
+var home = require('user-home');
+var rm = require('rimraf').sync;
+var download = require('./cli/download');
+var localPath = require('./cli/local-path');
+var checkVersion = require('./cli/check-version');
+var generate = require('./cli/generate');
+var logger = require('./cli/logger');
+
+module.exports = function init(template, rawName, program) {
+  function gen(templatePath) {
+    console.log(name, templatePath, to)
+    // generate(name, templatePath, to, function (err) {
+    //   if (err) logger.fatal(err);
+    //   console.log();
+    //   logger.success('Generated "%s".', name);
+    // });
   }
-        
-  this.push(file);
-    return callback();
-  }))
-   // 将从template_test目录下读取的文件流写入到之前创建的文件夹中
-  .pipe(vfs.dest(projectPath))
-  .on('end', function() {
-    console.log('Installing packages...')
-    
-    // 将node工作目录更改成构建的项目根目录下
-    process.chdir(projectPath);
- 
-    // 执行安装命令
-    require('../lib/install');
-  })
-  .resume();
+
+  function run() {
+    if (localPath.isLocalPath(template)) {
+      // use local/cache template
+      // Example:
+      // wepy init E:\workspace\wepy_templates\standard my-wepy-project
+      // wepy init standard my-wepy-project --offline
+      const templatePath = localPath.getTemplatePath(template);
+      if (fs.existsSync(templatePath)) {
+        gen(templatePath);
+      } else {
+        logger.fatal('Local template "%s" not found.', template);
+      }
+    } else {
+      checkVersion(function() {
+        downloadAndGenerate(template);
+      });
+    }
+  }
+
+  function downloadAndGenerate(template) {
+    const spinner = ora('downloading template');
+    spinner.start();
+
+    if (fs.existsSync(tmp)) {
+      rm(tmp);
+    }
+    // console.log('fs.existsSync(tmp): ', tmp)
+    if (!hasSlash) {
+      // use official template .... githubIssueDemo
+      download.downloadOfficialZip(template, tmp, { extract: true }).then(() => {
+        spinner.stop()
+        gen(tmp);
+      }).catch(e => {
+        if (e.statusCode === 404) {
+          logger.fatal(`Unrecongnized template: "${template}". Try "quick-coding list" to show all available templates `);
+        } else if (e) {
+          logger.fatal('Failed to download repo ' + template + ': ' + e.message.trim());
+        }
+      });
+    } else {
+      // use third party template
+      download.downloadRepo(template, tmp, { clone }, err => {
+        spinner.stop();
+        if (err) logger.fatal('Failed to download repo ' + template + ': ' + err.message.trim());
+        gen(tmp);
+      });
+    }
+  }
+
+  var hasSlash = template.indexOf('/') > -1; // 模版中是否存在斜杠
+  var inPlace = !rawName || rawName === '.';
+  var name = inPlace ? path.relative('../', process.cwd()) : rawName;
+  var to = path.resolve(rawName || '.');
+  var clone = program.clone || false;
+  var offline = program.offline || false;
+  let tmp = path.join(home, '.quick_coding_templates', template.replace(/\//g, '-'));
+
+  /**
+   * use offline cache
+   */
+  if (offline) {
+    console.log(`> Use cached template at ${chalk.yellow(tildify(tmp))}`);
+    template = tmp;
+  }
+
+  if (fs.existsSync(to)) {
+    inquirer.prompt([{
+      type: 'confirm',
+      message: inPlace
+        ? 'Generate project in current directory?'
+        : 'Target directory exists. Continue?',
+      name: 'ok'
+    }]).then(answers => {
+      if (answers.ok) {
+        run();
+      }
+    }).catch();
+  } else {
+    run();
+  }
+
 }
