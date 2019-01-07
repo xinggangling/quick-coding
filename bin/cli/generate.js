@@ -65,8 +65,6 @@ exports = module.exports = function generate(name, src, dest, done) {
     opts.metalsmith.before(metalsmith, opts, helpers);
   }
 
-  console.log(opts.filters)
-
   metalsmith.use(askQuestions(opts.prompts))
     .use(filterFiles(opts.filters))
     .use(renderTemplateFiles(opts.skipInterpolation));
@@ -131,28 +129,29 @@ function renderTemplateFiles(skipInterpolation) {
   skipInterpolation = typeof skipInterpolation === 'string'
     ? [skipInterpolation]
     : skipInterpolation;
+
   return (files, metalsmith, done) => {
     var keys = Object.keys(files);
     var metalsmithMetadata = metalsmith.metadata();
-    async.each(keys, (file, next) => {
-      // skipping files with skipInterpolation option
-      if (skipInterpolation && multimatch([file], skipInterpolation, { dot: true }).length) {
-        return next();
-      }
-      var str = files[file].contents.toString();
-      // do not attempt to render files that do not have mustaches
-      if (!/{{([^{}]+)}}/g.test(str)) {
-        return next();
-      }
-      handlebars.render(str, metalsmithMetadata, (err, res) => {
-        if (err) {
-          err.message = `[${file}] ${err.message}`;
-          return next(err);
-        }
-        files[file].contents = new Buffer(res);
-        next();
-      });
-    }, done);
+    // async.each(keys, (file, next) => {
+    //   // skipping files with skipInterpolation option
+    //   if (skipInterpolation && multimatch([file], skipInterpolation, { dot: true }).length) {
+    //     return next();
+    //   }
+    //   var str = files[file].contents.toString();
+    //   // do not attempt to render files that do not have mustaches
+    //   if (!/{{([^{}]+)}}/g.test(str)) {
+    //     return next();
+    //   }
+    //   handlebars.render(str, metalsmithMetadata, (err, res) => {
+    //     if (err) {
+    //       err.message = `[${file}] ${err.message}`;
+    //       return next(err);
+    //     }
+    //     files[file].contents = new Buffer(res);
+    //     next();
+    //   });
+    // }, done);
   };
 }
 
